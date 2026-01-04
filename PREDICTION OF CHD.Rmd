@@ -1,0 +1,498 @@
+---
+title: "Prediction of Coronary Heart Disease"
+author: "EUGENE OSAE"
+date: "`r Sys.Date()`"
+output:
+  word_document: default
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+PREDICTION OF CORONARY HEART DISEASE (CHD) USING POTENTIAL RISK FACTORS
+--------------------------------------------------------------------------
+Department Of Mathematics and Statistics
+MM924: Statistical Modelling and Analysis Project
+(Multivariate Analysis Project )
+
+--------------------------------------------------------------------------
+ABSTRACT
+--------------------------------------------------------------------------
+
+Introduction
+--------------------------------------------------------------------------
+
+Coronary heart disease (CHD) is a major cause of death worldwide. CHD is also known as Ischaemic heart disease or coronary artery disease, and it is mainly caused by blockage of the heart’s blood supply by a build-up of fatty substances in the coronary arteries. The aim of this study is to analyse the variations in risk factors associated with CHD and how they affect the possibility of one contracting CHD.
+
+Methods
+--------------------------------------------------------------------------
+
+The dataset used in this project consists of 462 rows and 8 variables which shows the various measurement of all the potential risk factors associated with CHD. The data shows information on whether an individual has CDH. The exploratory data analysis takes into consideration the size, nature and structure of the data, summaries, and visualization to determine the potential risk factors associated with CHD. The model is built using logistic regression using the forward selection method to select the appropriate variables to determine the relationship between the potential risk factors and CHD status. The Principal Component Analysis (PCA) is deployed to investigate the variables for further identification of the effects of each variable on the probability of contracting CHD.
+
+Results
+--------------------------------------------------------------------------
+The exploratory data analysis shows that the potential risk factors for CHD comprise the values of high systolic blood pressure, tobacco usage, low-density lipoprotein cholesterol, percentage of body fat, type A behaviour pattern score, body mass index, current alcohol consumption, and age. The sensitivity, specificity, and optimal balance point for the fitted data are estimated. From the PCA sbp, tobacco, ldl, and adiposity indicated 72% of the total variations in the dataset, it is highly likely that obesity and age will also be contributing factors for the diagnoses of CHD. There is consistency across the various analyses which indicates the accuracy of the findings. The findings from the exploratory data analysis, covariance, correlation, and PCA give details of the significance of systolic blood pressure, tobacco, Low-density lipoprotein, adiposity, obesity, alcohol, and age as the potential risk factors of an individual diagnosed with CHD.    
+
+Discussion and Conclusion
+--------------------------------------------------------------------------
+The results of this project have helped in the determination and comprehension of the potential risk factors of CHD. The logistic regression and principal component analysis indicated insights into the datasets emphasising more on the relationship between the variables and CHD status. Furthermore, the findings emphasise the significance of several risk factors to prevent and manage CHD. To prevent and manage CHD, models must be built to accurately predict the potential risk factors that can lead to the contraction of CHD. Statistical modelling is one of the methods that can be used for the classification and prediction of risk factors related to CHD. In conclusion, the application of exploration data analysis with logistic regression, and principal component analysis has demonstrated that models can be used in the health sector for drug improvement, managing lifestyles and other factors to prevent and manage CHD. 
+
+Load required libraries
+```{r}
+library("caTools")
+library("MASS")
+library("Epi")
+library("stats")
+```
+
+Load data from working directory
+---------------------------------------------------------------------------
+About the Dataset 
+---------------------------------------------------------------------------
+
+The CHD dataset looks at a retrospective sample of males in region of Western Cape,South Africa which has a high risk of heart disease. The data were collected over the course of 2019. The response variable, on which the analysis will be made, is labelled "CHD", where "1" indicates the indiviudal has been diagnosed with CHD and "0" indicates the person has not been diagnosed with CHD.
+
+Full descriptions of the potential risk factors are provided below
+* ind -       Unique number of individual
+* sbp -       Systolic blood pressure (mmHg)
+* tobacco -   Yearly tobacco use (kg)
+* ldl -       Low density lipoprotein cholsterol (mmol/L)
+* adiposity - Percentage of body fat (%)
+* typea -     Type-A behaviour pattern score
+* obesity -   Body mass index
+* alcohol -   Current alcohol consumption (litres)
+* age -       Age (years)
+* CHD -       1=Diagnosed with coronary heart disease, 0=without
+
+
+```{r}
+
+ # dataset
+load("CHD.RDATA") 
+
+# to maintain same results 
+set.seed(202282863)
+
+# the line below gets row numbers to omit for your data
+# CHD is the name of the data you read in
+
+z.omit<- sample(1:nrow(CHD),10, replace=FALSE)
+
+# this will give you a subsample of the data
+
+CHD.data<-CHD[-z.omit] 
+```
+
+EXPLORATORY DATA ANALYSIS
+--------------------------------------------------------------------------
+Size, nature, and structure of the dataset
+--------------------------------------------------------------------------
+
+* The size of the dataset is made up of 462 observations i.e. rows and the   size is moderate. 
+* The nature of the dataset consists of variables with information about    the potential risk factors for CHD and the response variable CHD shows    whether an individual has CHD or does not have CHD, it is a categorical   variable, and the remaining variables are continuous in nature.
+* The structure of the dataset is a two-dimensional array with rows         corresponding to individual rows and columns which shows that there are   differences in measurement recorded for each variable. The structure of   the dataset makes it convenient for data analysis. 
+
+
+```{r}
+# Size of Data
+dim(CHD.data) 
+```
+
+```{r}
+# Structure of Data
+str(CHD.data)
+
+```
+
+ Head of the data
+```{r}
+head(CHD.data)
+```
+
+Tail  of Data
+```{r}
+# Tail
+tail(CHD.data)
+
+```
+
+
+
+Summary measures, plots, and potential risk factors for CHD 
+---------------------------------------------------------------------------
+
+The average systolic blood pressure is 138.30 mmHg, with a range from 101 mmHg to 218 mmHg. The average yearly tobacco usage is 3.64kg with a maximum of 31.20kg and a minimum of 0kg. The average of Low-density lipoprotein cholesterol level is 4.74 mmol/L, with a maximum level of 0.98 mmol/L and a minimum level of 15.33 mmol/L. The average percentage of body fat is 25.41%, with a maximum of 6.74% and a minimum of 42.49%. The average type-A behaviour pattern score is 53.1, ranging from a minimum of 13 to a maximum of 78. The average body mass index is 26.04 with a range of 14.7 to 46.58. The average current alcoholic consumption is 17.04 litres, ranging from 0 litres to 147.19 litres. The average age is 42.82 years, with a minimum age of 15 and maximum age of 64 years old. 160 individuals were diagnosed with CHD. 
+```{r}
+summary(CHD.data)
+
+```
+
+Visual Representation of Risk factors
+--------------------------------------------------------------------------
+The boxplot compares the range of potential risk factors for the retrospective sample of males with a high risk of heart disease. In the comparison, individuals with systolic blood pressure, yearly tobacco usage, low-density lipoprotein Cholesterol, percentage of body fat, type-A behaviour pattern, body mass index, current alcohol and age values recorded the highest diagnosis of CHD. The comparison of the median also showed that these variables are slightly higher for those with CHD than those without CHD. This shows that all the variables are potential risk factors for CHD when the data was visualized using the boxplot. The variables in the dataset also showed that there is the presence of outliers and further analysis can be carried out to investigate whether there is an association between the variables and CHD. 
+
+
+```{r}
+par(mfrow=c(2,4))
+
+boxplot(sbp~ CHD, data= CHD.data,col = c("lightgreen",
+"lightpink"), names = c("0", "1"),outline= FALSE )
+boxplot(tobacco~CHD, data=CHD.data,col = c("lightgreen",
+"lightpink"), names = c("0", "1"),outline=FALSE)
+boxplot(ldl~CHD, data=CHD.data,col = c("lightgreen",
+"lightpink"), names = c("0", "1"),outline=FALSE)
+boxplot(adiposity~CHD, data=CHD.data,col = c("lightgreen",
+"lightpink"), names = c("0", "1"),outline=FALSE)
+boxplot(typea~CHD, data=CHD.data,col = c("lightgreen",
+"lightpink"), names = c("0", "1"),outline=FALSE)
+boxplot(obesity~CHD, data=CHD.data,col = c("lightgreen",
+"lightpink"), names = c("0", "1"),outline=FALSE)
+boxplot(alcohol~CHD, data=CHD.data,col = c("lightgreen",
+"lightpink"), names = c("0", "1"),outline=FALSE)
+boxplot(age~CHD, data=CHD.data,col = c("lightgreen",
+"lightpink"), names = c("0", "1"),outline=FALSE)
+
+
+```
+
+Covariances and Correlations of Variables with CHD
+--------------------------------------------------------------------------
+The results indicates the estimates of the covariances and correlations between the variable with CHD status. The interpretation is shown below: 
+
+Covariance of the variables with CHD
+
+* sbp -       Positive Low Covariance- Weak Relationship 
+* tobacco -   Positive Low Covariance- Weak Relationship
+* ldl -       Positive Low Covariance- Weak Relationship
+* adiposity - Positive Low Covariance- Weak Relationship
+* typea -     Negative Low Covariance- Weak Relationship
+* obesity -   Positive Low Covariance- Weak Relationship
+* alcohol -   Positive Low Covariance- Weak Relationship
+* age -       Positive Low Covariance- Weak Relationship
+
+Correlation of the variables with CHD
+
+* sbp -       Positive weak
+* tobacco -   Positive moderate
+* ldl -       Positive moderate
+* adiposity - Positive moderate
+* typea -     Positive weak
+* obesity -   Positive weak
+* alcohol -   Positive weak
+* age -       Positive moderate 
+
+The comparison of the relationship between the variables with CHD status using the covariance and correlation indicates that tobacco, ldl, adiposity and age variables showed a strong relationship with CHD status, and it is the most appropriate variables in the dataset to fit the model. 
+
+
+
+```{r}
+
+par(mforw=c(1,1))
+
+# Covariances and Correlations of Variables with CHD
+# Covariance Matrix 
+New.CHD_data<- data.frame(CHD.data$sbp, CHD.data$tobacco,CHD.data$ldl,CHD.data$adiposity,
+                     CHD.data$typea,CHD.data$obesity,CHD.data$alcohol,CHD.data$age)
+
+for (i in 1:ncol(New.CHD_data)) New.CHD_data[,i] <- log10(New.CHD_data[,i]+1)
+Matrix.data <- log10(New.CHD_data+1)
+Cov.Matrix<- cov(Matrix.data)
+print(Cov.Matrix, digits = 3)
+
+# Correlation Matrix
+Corr.Matrix<- cor(Matrix.data)
+print(Corr.Matrix, digits = 3)
+
+
+```
+
+MACHINE LEARNING MODEL
+--------------------------------------------------------------------------
+Data splitting and variable selection
+--------------------------------------------------------------------------
+The full model is fitted, and the backward selection method is applied. The backward selection method is applied by eliminating the variables with high p-values until all remaining variables have a significant p-value, this method is applied because the number of variables is very low and it is more efficient than the forward selection method. The variables that remained in the final model are tobacco, Low-density lipoprotein, Type A behaviour pattern score and Age because they have lower p-values. The data is split into training and testing sets with the training set having 2/3 and testing set 1/3 of the dataset. 
+
+```{r}
+# Building the predictive model (Logistic Regression)
+
+z<- glm(CHD~., data = CHD.data, family = binomial)
+
+# Data Splitting into training and testing set
+
+split<- sample.split(CHD.data,SplitRatio = 2/3)
+training_set<- subset(CHD.data, split==TRUE)
+testing_set<- subset(CHD.data, split==FALSE)
+
+# Building and Variable Selection of  the logistic regression model
+
+z1<- glm(CHD=="1"~ ind+sbp+tobacco+ldl+adiposity+typea+obesity+alcohol+age,
+         data= training_set, family = binomial)
+summary(z1)
+
+z2<- glm(CHD=="1"~ ind+sbp+tobacco+ldl+adiposity+typea+obesity+age,
+         data= training_set, family = binomial)
+summary(z2)
+
+z3<- glm(CHD=="1"~ sbp+tobacco+ldl+adiposity+typea+obesity+age,
+         data= training_set, family = binomial)
+summary(z3)
+
+z4<- glm(CHD=="1"~ sbp+tobacco+ldl+typea+obesity+age,
+         data= training_set, family = binomial)
+summary(z4)
+
+z5<- glm(CHD=="1"~ tobacco+ldl+typea+obesity+age,
+         data= training_set, family = binomial)
+summary(z5)
+
+z6<- glm(CHD=="1"~ tobacco+ldl+typea+age,
+         data= training_set, family = binomial)
+summary(z6)
+
+
+# Backward Selection Method
+Model_Backward1<-step(z1, direction = "backward")
+Model_Backward2<-step(z2, direction = "backward")
+Model_Backward3<-step(z3, direction = "backward")
+Model_Backward4<-step(z4, direction = "backward")
+Model_Backward5<-step(z5, direction = "backward")
+Model_Backward6<-step(z6, direction = "backward")
+
+# Final Model 
+
+Mymodel<- glm(CHD=="1"~ tobacco+ldl+typea+age,
+              data= training_set, family = binomial)
+
+```
+Prediction Using the Final Model and Interpretation
+--------------------------------------------------------------------------
+Train data:
+False Positives (CHD=0 incorrectly predicted as CHD=1): 25
+False Negatives (CHD=1 incorrectly predicted as CHD=0): 9
+True Positives (CHD=1 correctly predicted as CHD=1): 22
+True Negatives (CHD=0 correctly predicted as CHD=0): 83
+
+Test set: 
+False Positives (CHD=0 incorrectly predicted as CHD=1): 31
+False Negatives (CHD=1 incorrectly predicted as CHD=0): 66 
+True Positives (CHD=1 correctly predicted as CHD=1): 47
+True Negatives (CHD=0 correctly predicted as CHD=0): 179
+
+```{r}
+# Prediction using Final Model
+Mod.Predict<- predict(Mymodel, testing_set, type = "response")
+Mod.Predict[1:5]
+
+# Run the test and train data through the model
+
+Mod.Test<- predict(Mymodel, testing_set, type = "response")
+Mod.Test[1:5]
+
+Mod.Train<- predict(Mymodel, training_set, type = "response")
+Mod.Train
+```
+
+
+Assess the fit of the final model and interpret the coefficients and 
+confidence intervals for the estimates.
+--------------------------------------------------------------------------
+
+The results of the final model show that it is a good fit since the deviance residuals are low and the Akaike Information Criterion values are also low, and the estimates of the coefficients have a lower p-value. The estimates of the coefficients of the variables indicate that the model variables have a great effect on the likelihood of an individual being diagnosed with CHD. The confidence interval shows that there is a strong relationship between higher values of this variable and is more likely to cause CHD. This shows that 95% are confident that these variables in the model have a greater effect on the likelihood of an individual getting CHD. 
+
+```{r}
+# Confusion Matrix for Training and Testing set 
+# at Threshold greater than 0.5 as Binary Classification
+
+Conf.matrix.tr<- table(Mod.Train>0.5,training_set$CHD)
+Conf.matrix.tr
+
+Conf.matrix.te<- table(Mod.Predict>0.5,testing_set$CHD)
+Conf.matrix.te
+
+# Fit of the model
+# Model Accuracy
+(Confmatrix[[1,1]]+ Confmatrix[[2,2]])/ sum(Confmatrix)
+
+# Confidence Interval of the estimates 
+cbind(Mymodel$coefficients,confint.default(Mymodel))
+exp(cbind(Mymodel$coefficients,confint.default(Mymodel)))
+
+```
+
+Optimal Balance point for model’s sensitivity and specificity
+--------------------------------------------------------------------------
+
+The sensitivity shows the proportion of CHD cases that are correctly identified by the model while the specificity also shows that the proportion of individuals without CHD cases are correctly identified by the model. For a mode to be classified as a good model, the sensitivity and specificity should be large, but this is not possible because one increases while the other decreases. This is balanced using the ROC curve as shown in Appendix 1, figure 2. The optimal balance point value from the ROC curve is 0.283 which shows that there is a decrease in false negatives and an increase in true positives in the test dataset and an increase in false negatives and an increased in true positives in the train datasets
+
+
+```{r}
+par(mfrow=c(1,2))
+ROC(Mod.Test, testing_set$CHD, plot = "ROC")
+ROC(Mod.Train, training_set$CHD, plot = "ROC")
+
+
+
+```
+
+Correct Classification rate, sensitivity, and specificity
+--------------------------------------------------------------------------
+The correct classification rate for the training dataset and testing dataset is approximately 77% with the sensitivity and specificity of the testing datasets of approximately 62% and 85% respectively. 
+
+```{r}
+# Predicting again on testing_set using optimal cut-off
+# Confusion matrix for test and train data (threshold >0.42 after ROC)
+Conf.matrix1 <- table(Mod.Train>0.42, training_set$CHD)
+Conf.matrix1
+
+Conf.matrix2 <- table(Mod.Predict>0.42, testing_set$CHD)
+Conf.matrix2
+
+True.Positive_TP<-29
+True.Negative_TN<-14
+False.Positive_FP<-18
+False.Negative_FN<-78
+Correct.Class.Rate<- (True.Positive_TP+True.Negative_TN)/(True.Positive_TP+True.Negative_TN+False.Positive_FP+False.Negative_FN)
+
+Correct.Class.Rate<- ((78+29)/(78+29+14+18))*100
+Correct.Class.Rate
+
+Sensitivity<- ((29)/(29+18))*100
+Sensitivity
+Specificity<-((78)/(78+14))*100
+Specificity
+
+```
+
+PERFORMING PRINCIPAL CONPONENT ANALYSIS (PCA)
+--------------------------------------------------------------------------
+From the observation of the correlation and covariance matrices, the variances are measured using different units and there are variations in the values of the variances, the correlation matrix is then applied for the PCA. It is observed that the relationship between the variables, such as adiposity is high (72%) and that of obesity and adiposity is also high (72%), etc. 
+
+* The correlation of sbp is positive with tobacco, ldl, adiposity,          obesity, alcohol and age and negative correlation with typea. 
+* The correlation of tobacco is positive with sbp, ldl, adiposity,         obesity, alcohol and age and negative with typea. 
+* The correlation of ldl is positive with sbp, tobacco, adiposity, typea,   obesity and age and negative with alcohol. 
+* The correlation of adiposity is positive with sbp, tobacco, ldl,          obesity, alcohol and age and negative with typea.
+* The correlation of typea is positive with ldl, obesity and alcohol and    negative with sbp, tobacco, adiposity, and age. 
+* The correlation of obesity is positive with all the variables. 
+* The correlation of alcohol is positive with all the variables except      ldl. 
+* The correlation of age is positive for all the variables except typea. 
+
+From the cumulative proportion of the variance, it is observed that 45% of the total variance is described by the first component while 95% is described by the first four components. Few components represent a small proportion of the variance, and these four components show enough representation of the datasets. From Kaiser’s criterion in the plot in Appendix 1, figure 3, the first three components show a variance that is higher than 1%. Since the first four components are 95%, in total variation, the first four components are displayed on the plot.
+
+*	The contrast between sbp, tobacco, ldl, adiposity, obesity, age versus    typea values is PC1
+*	The contrast between ldl, typea, obesity versus sbp, tobacco and alcohol   values is PC2. 
+*	The contrast between age versus typea and alcohol values is PC3. 
+*	The contrast between tobacco, ldl, typea, age versus sbp, obesity,        alcohol is PC4. 
+
+A detailed interpretation of the various components and the relationship between the components and original datasets with their PC scores is as follows: 
+
+* PC1 showed a positive score with higher values for sbp, tobacco, ldl,     adiposity, obesity and age with the indication that individuals with      positive scores on PC1 are more likely to develop CHD.
+* PC2 showed a positive score with higher values for ldl, typea and         obesity with the indication that individuals with positive scores on PC2   are more likely to develop CHD.
+* PC3 showed a positive score with higher values for age with the           indication that individuals with positive scores on PC3 are more likely   to develop CHD.
+* PC4 indicate showed a positive score with higher values for tobacco,      ldl, typea, and age with the indication that individuals with positive    scores on PC4 are more likely to develop CHD.
+
+The PCA showed that individuals with high values of sbp, tobacco, ldl, adiposity, typea, obesity and age are more likely to be diagnosed with CHD. Furthermore, the PCA is interpreted by using the biplot as shown in Appendix 1, figure 4. The interpretation of the biplot is shown below: 
+
+For example, 450 is strong on alcohol, unlike 424
+*	For example, 458 strong on sbp, unlike 220
+*	The variables typea and adiposity showed very little correlation
+*	The variables obesity and ldl showed very little correlation
+*	The variables age and adiposity showed very little correlation
+*	The variables sbp, age and adiposity are negatively correlated with PC1
+
+
+```{r}
+## correlation matrix
+Mydata<-CHD[,-10]
+Corr.Matrix<-round(cor(Mydata[,-1]),2)
+Corr.Matrix
+
+## Covariance Matrix
+Cov.Matrix<- round(var(Mydata[,-1]),2)
+Cov.Matrix
+
+# standardize the variables and remove CHD from the data set 
+
+PCA.Mydata <- prcomp(Mydata[,-1], scale=FALSE)
+print(PCA.Mydata, digits=2)   # Compute the Standard Deviations
+
+# To compute Overall Variance
+sum(PCA.Mydata$sdev^2)
+# Percentage of Variance
+round((PCA.Mydata$sdev^2)/ sum(PCA.Mydata$sdev^2)*100,2)
+round(cumsum((PCA.Mydata$sdev^2)/ sum(PCA.Mydata$sdev^2)*100),2)
+
+# Summary for all the details 
+summary(PCA.Mydata)      
+
+# To see all the output
+PCA.Mydata
+
+# To see all the Principal Component Loadings: Eg. PC2
+PCA.Mydata$rotation[,2]
+
+# gets correlations of the x variables with PC1-PC4 (just as an example)
+
+round(cor(Mydata[,-1],PCA.Mydata.Pr[,1:4]),2) 
+
+# check the result for PC2 for example
+
+PCA.Mydata$sdev
+PCA.Mydata$rotation[,2]*PCA.Mydata$sdev[2]
+
+```
+
+```{r}
+## Plot of to Show the Number of Components
+
+library(factoextra)
+fviz_eig(PCA.Mydata, addlabels = TRUE, xlab = "Principal components of CHD")
+
+
+```
+
+```{r}
+# Prediction of PCA to gets PC scores
+
+PCA.Mydata.Pr <- predict(PCA.Mydata) 
+head(PCA.Mydata.Pr)
+round(head(PCA.Mydata.Pr),2) 
+
+```
+
+Plot of Various Princinpal Components
+--------------------------------------------------------------------------
+
+```{r}
+## the appearance of the PCs
+par(mfrow=c(1,2))
+plot(PCA.Mydata.Pr[,1:2], type="n", xlim=c(-4,5))
+text(x=PCA.Mydata.Pr[,1], y=PCA.Mydata.Pr[,2], labels= "PC1$PC2",cex=0.7)
+
+plot(PCA.Mydata.Pr[,3:4], type="n", xlim=c(-3,3))
+text(x=PCA.Mydata.Pr[,3], y=PCA.Mydata.Pr[,4], labels="PC3$PC4",cex=0.7)
+par(mfrow=c(1,1))
+
+```
+The biplot to interpret the sample scores
+--------------------------------------------------------------------------
+ 
+```{r}
+# The biplot to interpret the sample scores
+ 
+biplot(PCA.Mydata)
+```
+Comparison of Principal Component Analysis with Logistic Regression
+--------------------------------------------------------------------------
+
+* The observation made from the variables that contribute to the            likelihood of an individual being diagnosed with CHD is common in both    Logistic regression and PCA with variables tobacco, ldl, typea, and age   variables.
+
+*	PCA is focused on interpreting the relationships between the variables    while logistic regression focused on the relationships between each       variable and the response variable.
+
+*	From the result indicated in both analyses, it is better to use logistic   regression than to use PCA because the variables are smaller in number    as indicated by the dataset. Furthermore, PCA provides more insights      into the dataset when used with logistic regression specifically to show   the accuracy of the analysis. 
+
+*	It is best to use PCA in exploratory data analysis while logistic         regression is best used for the prediction of CHD. 
+
+
